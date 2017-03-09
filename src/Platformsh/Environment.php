@@ -11,7 +11,7 @@ namespace Platformsh;
  */
 class Environment
 {
-    const MAGENTO_ROOT = __DIR__ . '/../../../../../../';
+    const MAGENTO_ROOT = __DIR__ . '/../../../../../';
 
     public $writableDirs = ['var/di', 'var/generation', 'app/etc', 'pub/media'];
 
