@@ -83,7 +83,7 @@ class Build extends Command
     private function applyMccPatches()
     {
         $this->env->log("Applying patches.");
-        $this->env->execute('/usr/bin/php ' . Environment::MAGENTO_ROOT . 'vendor/platformsh/platformsh-magento2-configuration/patch.php');
+        $this->env->execute('/usr/bin/php ' . Environment::MAGENTO_ROOT . 'vendor/platformsh/magento2-configuration/patch.php');
     }
 
     /**
