@@ -83,7 +83,7 @@ class Build extends Command
     private function applyMccPatches()
     {
         $this->env->log("Applying patches.");
-        $this->env->execute('/usr/bin/php ../../../patch.php');
+        $this->env->execute('/usr/bin/php' . __DIR__ . '../../../patch.php');
     }
 
     /**
