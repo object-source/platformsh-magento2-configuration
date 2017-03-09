@@ -6,7 +6,7 @@ require_once 'src/Platformsh/Environment.php';
 $env = new Environment();
 
 $env->log("Copying static.php to front-static.php");
-copy(Environment::MAGENTO_ROOT . 'pub/static.php', Environment::MAGENTO_ROOT . '../pub/front-static.php');
+copy(Environment::MAGENTO_ROOT . 'pub/static.php', Environment::MAGENTO_ROOT . 'pub/front-static.php');
 
 $dirName = __DIR__ . '/patches';
 
