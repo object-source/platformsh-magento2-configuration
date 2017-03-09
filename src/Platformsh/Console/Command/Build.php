@@ -21,7 +21,6 @@ class Build extends Command
      */
     const BUILD_OPT_SKIP_DI_COMPILATION = 'skip_di_compilation';
     const BUILD_OPT_SKIP_DI_CLEARING = 'skip_di_clearing';
-    const BUILD_OPT_SKIP_PATCHES = 'skip_patches';
 
     /**
      * @var Environment
@@ -57,10 +56,8 @@ class Build extends Command
     private function build()
     {
         $this->env->log("Start build.");
-        if (!$this->getBuildOption(self::BUILD_OPT_SKIP_PATCHES)) {
-            $this->applyMccPatches();
-            $this->applyCommittedPatches();
-        }
+//        $this->applyMccPatches();
+//        $this->applyCommittedPatches();
         $this->compileDI();
         $this->clearInitDir();
         $this->env->execute('rm -rf app/etc/env.php');
