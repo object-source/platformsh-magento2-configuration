@@ -238,9 +238,12 @@ class Deploy extends Command
     private function updateMagento()
     {
         $this->env->log("File env.php contains installation date. Updating configuration.");
+        $this->enableMaintenanceMode();
+        $this->clearCache();
         $this->updateConfig();
         $this->setupUpgrade();
         $this->clearCache();
+        $this->disableMaintenanceMode();
     }
 
     private function updateConfig()
@@ -458,11 +461,9 @@ class Deploy extends Command
             }
 
             $this->env->log("Enable production mode");
-            $configFileName = "app/etc/env.php";
-            $config = include $configFileName;
-            $config['MAGE_MODE'] = 'production';
-            $updatedConfig = '<?php'  . "\n" . 'return ' . var_export($config, true) . ';';
-            file_put_contents($configFileName, $updatedConfig);
+            $this->env->execute(
+                "cd bin/; /usr/bin/php ./magento deploy:mode:set ". self::MAGENTO_PRODUCTION_MODE . $this->verbosityLevel
+            );
         } else {
             $this->env->log("Enable developer mode");
             $this->env->execute(
@@ -561,10 +562,6 @@ class Deploy extends Command
 
     private function generateFreshStaticContent()
     {
-        /* Enable maintenance mode */
-        $this->env->log("Enabling Maintenance mode.");
-        $this->env->execute("cd bin/; /usr/bin/php ./magento maintenance:enable {$this->verbosityLevel}");
-
         /* Generate static assets */
         $this->env->log("Extract locales");
 
@@ -595,10 +592,6 @@ class Deploy extends Command
         $this->env->execute(
             "/usr/bin/php ./bin/magento setup:static-content:deploy $jobsOption $excludeThemesOptions $locales {$this->verbosityLevel}"
         );
-
-        /* Disable maintenance mode */
-        $this->env->execute("cd bin/; /usr/bin/php ./magento maintenance:disable {$this->verbosityLevel}");
-        $this->env->log("Maintenance mode is disabled.");
     }
 
     /**
@@ -700,5 +693,19 @@ class Deploy extends Command
         $this->env->log("Removing old generated code in the background");
         // Must match filename of old generated assets directory in pre-deploy.php
         $this->env->backgroundExecute("rm -rf " . realpath(Environment::MAGENTO_ROOT . 'var') . '/generation_old_*');
+    }
+
+    private function enableMaintenanceMode()
+    {
+        /* Enable maintenance mode */
+        $this->env->log("Enabling Maintenance mode.");
+        $this->env->execute("cd bin/; /usr/bin/php ./magento maintenance:enable {$this->verbosityLevel}");
+    }
+
+    private function disableMaintenanceMode()
+    {
+        /* Enable maintenance mode */
+        $this->env->log("Disabling Maintenance mode.");
+        $this->env->execute("cd bin/; /usr/bin/php ./magento maintenance:disable {$this->verbosityLevel}");
     }
 }
