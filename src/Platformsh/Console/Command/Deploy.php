@@ -313,7 +313,7 @@ class Deploy extends Command
         $this->env->log("Running setup upgrade.");
 
         $this->env->execute(
-            "cd bin/; /usr/bin/php ./magento setup:upgrade --keep-generated {$this->verbosityLevel}"
+            "cd bin/; /usr/bin/php ./magento setup:upgrade {$this->verbosityLevel}"
         );
     }
 
@@ -461,9 +461,11 @@ class Deploy extends Command
             }
 
             $this->env->log("Enable production mode");
-            $this->env->execute(
-                "cd bin/; /usr/bin/php ./magento deploy:mode:set ". self::MAGENTO_PRODUCTION_MODE . $this->verbosityLevel
-            );
+            $configFileName = "app/etc/env.php";
+            $config = include $configFileName;
+            $config['MAGE_MODE'] = 'production';
+            $updatedConfig = '<?php'  . "\n" . 'return ' . var_export($config, true) . ';';
+            file_put_contents($configFileName, $updatedConfig);
         } else {
             $this->env->log("Enable developer mode");
             $this->env->execute(
