@@ -32,6 +32,12 @@ class Build extends Command
      */
     private $buildOptions;
 
+    private $cleanStaticViewFiles;
+    private $staticContentStashLocation;
+    private $staticDeployThreads;
+    private $staticDeployExcludeThemes = [];
+    private $verbosityLevel;
+
     /**
      * {@inheritdoc}
      * @throws \InvalidArgumentException
@@ -56,9 +62,12 @@ class Build extends Command
     private function build()
     {
         $this->env->log("Start build.");
+        $this->setEnvData();
         $this->applyMccPatches();
         $this->applyCommittedPatches();
+        $this->importConfiguration();
         $this->compileDI();
+        $this->generateFreshStaticContent();
         $this->clearInitDir();
         $this->env->execute('rm -rf app/etc/env.php');
         $this->env->execute('rm -rf app/etc/config.php');
@@ -75,6 +84,26 @@ class Build extends Command
             $this->env->execute(sprintf('rm -rf %s', $dir));
             $this->env->execute(sprintf('mkdir %s', $dir));
         }
+    }
+
+    private function setEnvData()
+    {
+        $var = $this->env->getVariables();
+        $this->cleanStaticViewFiles = isset($var["CLEAN_STATIC_FILES"]) && $var["CLEAN_STATIC_FILES"] == 'disabled' ? false : true;
+        $this->staticContentStashLocation = isset($var["STATIC_CONTENT_STASH_LOCATION"]) ? $var["STATIC_CONTENT_STASH_LOCATION"] : false;
+        $this->staticDeployExcludeThemes = isset($var["STATIC_CONTENT_EXCLUDE_THEMES"])
+            ? explode(',', $var["STATIC_CONTENT_EXCLUDE_THEMES"])
+            : [];
+        if (isset($var["STATIC_CONTENT_THREADS"])) {
+            $this->staticDeployThreads = (int)$var["STATIC_CONTENT_THREADS"];
+        } else if (isset($_ENV["STATIC_CONTENT_THREADS"])) {
+            $this->staticDeployThreads = (int)$_ENV["STATIC_CONTENT_THREADS"];
+        } else if (isset($_ENV["PLATFORM_MODE"]) && $_ENV["PLATFORM_MODE"] === 'enterprise') {
+            $this->staticDeployThreads = 3;
+        } else { // if Paas environment
+            $this->staticDeployThreads = 1;
+        }
+        $this->verbosityLevel = isset($var['VERBOSE_COMMANDS']) && $var['VERBOSE_COMMANDS'] == 'enabled' ? ' -vv ' : '';
     }
 
     /**
@@ -105,8 +134,7 @@ class Build extends Command
 
     private function compileDI()
     {
-        $this->env->execute('rm -rf var/generation/*');
-        $this->env->execute('rm -rf var/di/*');
+        $this->env->execute('rm -rf generated/*');
 
         $this->env->log("Enabling all modules");
         $this->env->execute("cd bin/; /usr/bin/php ./magento module:enable --all");
@@ -117,6 +145,12 @@ class Build extends Command
         } else {
             $this->env->log("Skip running DI compilation");
         }
+    }
+
+    private function importConfiguration()
+    {
+        $this->env->log('Import configuration');
+        $this->env->execute('cd bin/; /usr/bin/php ./magento app:config:import');
     }
 
     /**
@@ -141,5 +175,19 @@ class Build extends Command
 
     private function getBuildOption($key) {
         return isset($this->buildOptions[$key]) ? $this->buildOptions[$key] : false;
+    }
+
+    private function generateFreshStaticContent()
+    {
+        $excludeThemesOptions = $this->staticDeployExcludeThemes
+            ? "--exclude-theme=" . implode(' --exclude-theme=', $this->staticDeployExcludeThemes)
+            : '';
+        $jobsOption = $this->staticDeployThreads
+            ? "--jobs={$this->staticDeployThreads}"
+            : '';
+
+        $this->env->execute(
+            "/usr/bin/php ./bin/magento setup:static-content:deploy -f $jobsOption $excludeThemesOptions {$this->verbosityLevel}"
+        );
     }
 }
