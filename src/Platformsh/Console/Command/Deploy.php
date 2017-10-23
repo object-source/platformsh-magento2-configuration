@@ -55,10 +55,7 @@ class Deploy extends Command
 
     private $isMasterBranch = null;
     private $magentoApplicationMode;
-    private $cleanStaticViewFiles;
     private $adminLocale;
-    private $staticContentStashLocation;
-    private $doDeployStaticContent;
 
     private $verbosityLevel;
 
@@ -438,11 +435,6 @@ class Deploy extends Command
 
         /* Enable application mode */
         if ($this->magentoApplicationMode == self::MAGENTO_PRODUCTION_MODE) {
-            /* Workaround for MAGETWO-58594: disable redis cache before running static deploy, re-enable after */
-            if ($this->doDeployStaticContent) {
-                $this->deployStaticContent();
-            }
-
             $this->env->log("Enable production mode");
             $configFileName = "app/etc/env.php";
             $config = include $configFileName;
