@@ -626,6 +626,10 @@ class Deploy extends Command
             $this->urls['secure'] = $this->urls['unsecure'];
         }
 
+        if (!count($this->urls['unsecure'])) {
+            $this->urls['unsecure'] = $this->urls['secure'];
+        }
+
         $this->env->log(sprintf("Routes: %s", var_export($this->urls, true)));
     }
 
