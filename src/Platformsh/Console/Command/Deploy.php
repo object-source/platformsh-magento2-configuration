@@ -462,7 +462,7 @@ class Deploy extends Command
 
             $this->env->log("Enable production mode");
             $this->env->execute(
-                "cd bin/; /usr/bin/php ./magento deploy:mode:set ". self::MAGENTO_PRODUCTION_MODE . $this->verbosityLevel
+                "cd bin/; /usr/bin/php ./magento deploy:mode:set --skip-compilation ". self::MAGENTO_PRODUCTION_MODE . $this->verbosityLevel
             );
         } else {
             $this->env->log("Enable developer mode");
