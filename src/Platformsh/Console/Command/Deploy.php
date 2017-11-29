@@ -467,7 +467,7 @@ class Deploy extends Command
         } else {
             $this->env->log("Enable developer mode");
             $this->env->execute(
-                "cd bin/; /usr/bin/php ./magento deploy:mode:set " . self::MAGENTO_DEVELOPER_MODE . $this->verbosityLevel
+                "cd bin/; /usr/bin/php ./magento deploy:mode:set  --skip-compilation " . self::MAGENTO_DEVELOPER_MODE . $this->verbosityLevel
             );
         }
     }
