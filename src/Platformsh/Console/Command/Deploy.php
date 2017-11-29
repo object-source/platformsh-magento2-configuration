@@ -412,7 +412,7 @@ class Deploy extends Command
     private function isMasterBranch()
     {
         if (is_null($this->isMasterBranch)) {
-            if (isset($_ENV["PLATFORM_ENVIRONMENT"]) && $_ENV["PLATFORM_ENVIRONMENT"] == self::GIT_MASTER_BRANCH) {
+            if (isset($_ENV["PLATFORM_ENVIRONMENT"]) && strpos($_ENV["PLATFORM_ENVIRONMENT"], self::GIT_MASTER_BRANCH) === 0) {
                 $this->isMasterBranch = true;
             } else {
                 $this->isMasterBranch = false;
@@ -462,7 +462,7 @@ class Deploy extends Command
 
             $this->env->log("Enable production mode");
             $this->env->execute(
-                "cd bin/; /usr/bin/php ./magento deploy:mode:set ". self::MAGENTO_PRODUCTION_MODE . $this->verbosityLevel
+                "cd bin/; /usr/bin/php ./magento deploy:mode:set --skip-compilation ". self::MAGENTO_PRODUCTION_MODE . $this->verbosityLevel
             );
         } else {
             $this->env->log("Enable developer mode");
