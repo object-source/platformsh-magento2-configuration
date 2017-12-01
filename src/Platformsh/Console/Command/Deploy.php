@@ -102,7 +102,6 @@ class Deploy extends Command
             $this->updateMagento();
         }
         $this->processMagentoMode();
-        $this->disableGoogleAnalytics();
         $this->cleanupOldAssets();
         $this->env->log("Deployment complete.");
     }
@@ -382,16 +381,6 @@ class Deploy extends Command
         return $this->isMasterBranch;
     }
 
-    /**
-     * If branch is not master then disable Google Analytics
-     */
-    private function disableGoogleAnalytics()
-    {
-        if (!$this->isMasterBranch()) {
-            $this->env->log("Disabling Google Analytics");
-            $this->executeDbQuery("update core_config_data set value = 0 where path = 'google/analytics/active';");
-        }
-    }
 
     /**
      * Executes database query
