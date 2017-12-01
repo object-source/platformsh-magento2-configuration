@@ -270,11 +270,19 @@ class Deploy extends Command
      */
     private function setupUpgrade()
     {
-        $this->env->log("Running setup upgrade.");
+        try {
+            // This command will not return a zero status if there are schema updates to process
+            $this->env->execute(
+                "cd bin/; /usr/bin/php ./magento setup:db:status {$this->verbosityLevel}"
+            );
+            $this->env->log("Not running setup upgrade no DB schema updates required.");
+        } catch (Exception $e) {
+            $this->env->log("Running setup upgrade.");
 
-        $this->env->execute(
-            "cd bin/; /usr/bin/php ./magento setup:upgrade --keep-generated {$this->verbosityLevel}"
-        );
+            $this->env->execute(
+                "cd bin/; /usr/bin/php ./magento setup:upgrade --keep-generated {$this->verbosityLevel}"
+            );
+        }
     }
 
     /**
@@ -380,7 +388,6 @@ class Deploy extends Command
         }
         return $this->isMasterBranch;
     }
-
 
     /**
      * Executes database query
