@@ -119,7 +119,7 @@ class Build extends Command
         $this->env->log($logMessage);
 
         $this->env->execute(
-            "/usr/bin/php ./bin/magento setup:static-content:deploy $locales"
+            "/usr/bin/php ./bin/magento setup:static-content:deploy -f $locales"
         );
     }
 }
