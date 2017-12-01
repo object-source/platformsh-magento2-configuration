@@ -138,19 +138,6 @@ class Deploy extends Command
             : [];
         $this->adminLocale = isset($var["ADMIN_LOCALE"]) ? $var["ADMIN_LOCALE"] : "en_US";
 
-        if (isset($var["STATIC_CONTENT_THREADS"])) {
-            $this->staticDeployThreads = (int)$var["STATIC_CONTENT_THREADS"];
-        } else if (isset($_ENV["STATIC_CONTENT_THREADS"])) {
-            $this->staticDeployThreads = (int)$_ENV["STATIC_CONTENT_THREADS"];
-        } else if (isset($_ENV["PLATFORM_MODE"]) && $_ENV["PLATFORM_MODE"] === 'enterprise') {
-            $this->staticDeployThreads = 3;
-        } else { // if Paas environment
-            $this->staticDeployThreads = 1;
-        }
-        $this->staticContentStashLocation = isset($var["STATIC_CONTENT_STASH_LOCATION"]) ? $var["STATIC_CONTENT_STASH_LOCATION"] : false;
-        $this->doDeployStaticContent = isset($var["DO_DEPLOY_STATIC_CONTENT"]) && $var["DO_DEPLOY_STATIC_CONTENT"] == 'disabled' ? false : true;
-
-
         $this->magentoApplicationMode = isset($var["APPLICATION_MODE"]) ? $var["APPLICATION_MODE"] : false;
         $this->magentoApplicationMode =
             in_array($this->magentoApplicationMode, array(self::MAGENTO_DEVELOPER_MODE, self::MAGENTO_PRODUCTION_MODE))
@@ -250,35 +237,9 @@ class Deploy extends Command
     {
         $this->env->log("Updating configuration from environment variables.");
         $this->updateConfiguration();
-        $this->updateAdminCredentials();
-        $this->updateSolrConfiguration();
         $this->updateUrls();
     }
 
-    /**
-     * Update admin credentials
-     */
-    private function updateAdminCredentials()
-    {
-        $this->env->log("Updating admin credentials.");
-
-        $this->executeDbQuery("update admin_user set firstname = '$this->adminFirstname', lastname = '$this->adminLastname', email = '$this->adminEmail', username = '$this->adminUsername', password='{$this->generatePassword($this->adminPassword)}' where user_id = '1';");
-    }
-
-    /**
-     * Update SOLR configuration
-     */
-    private function updateSolrConfiguration()
-    {
-        $this->env->log("Updating SOLR configuration.");
-
-        if ($this->solrHost !== null && $this->solrPort !== null && $this->solrPath !== null && $this->solrHost !== null) {
-            $this->executeDbQuery("update core_config_data set value = '$this->solrHost' where path = 'catalog/search/solr_server_hostname' and scope_id = '0';");
-            $this->executeDbQuery("update core_config_data set value = '$this->solrPort' where path = 'catalog/search/solr_server_port' and scope_id = '0';");
-            $this->executeDbQuery("update core_config_data set value = '$this->solrScheme' where path = 'catalog/search/solr_server_username' and scope_id = '0';");
-            $this->executeDbQuery("update core_config_data set value = '$this->solrPath' where path = 'catalog/search/solr_server_path' and scope_id = '0';");
-        }
-    }
 
     /**
      * Update secure and unsecure URLs
