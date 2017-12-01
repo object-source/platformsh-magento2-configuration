@@ -16,21 +16,11 @@ use Platformsh\Environment;
  */
 class Build extends Command
 {
-    /**
-     * Options for build_options.ini
-     */
-    const BUILD_OPT_SKIP_DI_COMPILATION = 'skip_di_compilation';
-    const BUILD_OPT_SKIP_DI_CLEARING = 'skip_di_clearing';
 
     /**
      * @var Environment
      */
     private $env;
-
-    /**
-     * @var array
-     */
-    private $buildOptions;
 
     /**
      * {@inheritdoc}
@@ -48,7 +38,6 @@ class Build extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->buildOptions = $this->parseBuildOptions();
         $this->env = new Environment();
         $this->build();
     }
@@ -107,12 +96,8 @@ class Build extends Command
         $this->env->log("Enabling all modules");
         $this->env->execute("cd bin/; /usr/bin/php ./magento module:enable --all");
 
-        if (!$this->getBuildOption(self::BUILD_OPT_SKIP_DI_COMPILATION)) {
-            $this->env->log("Running DI compilation");
-            $this->env->execute("cd bin/; /usr/bin/php ./magento setup:di:compile");
-        } else {
-            $this->env->log("Skip running DI compilation");
-        }
+        $this->env->log("Running DI compilation");
+        $this->env->execute("cd bin/; /usr/bin/php ./magento setup:di:compile");
     }
 
     /**
@@ -124,18 +109,4 @@ class Build extends Command
         $this->env->execute('rm -rf ../init/*');
     }
 
-    /**
-     * Parse optional build_options.ini file in Magento root directory
-     */
-    private function parseBuildOptions()
-    {
-        $fileName = Environment::MAGENTO_ROOT . '/build_options.ini';
-        return file_exists($fileName)
-            ? parse_ini_file(Environment::MAGENTO_ROOT . '/build_options.ini')
-            : [];
-    }
-
-    private function getBuildOption($key) {
-        return isset($this->buildOptions[$key]) ? $this->buildOptions[$key] : false;
-    }
 }
