@@ -48,6 +48,7 @@ class Build extends Command
         $this->applyMccPatches();
         $this->applyCommittedPatches();
         $this->compileDI();
+        $this->deployStaticContent();
         $this->clearInitDir();
         $this->env->execute('rm -rf app/etc/env.php');
 
@@ -109,4 +110,16 @@ class Build extends Command
         $this->env->execute('rm -rf ../init/*');
     }
 
+    private function deployStaticContent()
+    {
+        $var = $this->env->getVariables();
+        $locales = isset($var["LOCALES"]) ? $var["LOCALES"] : "en_US en_GB";
+
+        $logMessage = $locales ? "Generating static content for locales: $locales" : "Generating static content.";
+        $this->env->log($logMessage);
+
+        $this->env->execute(
+            "/usr/bin/php ./bin/magento setup:static-content:deploy $locales"
+        );
+    }
 }
