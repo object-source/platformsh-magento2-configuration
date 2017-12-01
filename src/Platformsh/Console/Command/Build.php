@@ -61,7 +61,6 @@ class Build extends Command
         $this->compileDI();
         $this->clearInitDir();
         $this->env->execute('rm -rf app/etc/env.php');
-        $this->env->execute('rm -rf app/etc/config.php');
 
         /**
          * Writable directories will be erased when the writable filesystem is mounted to them. This
