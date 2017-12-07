@@ -269,6 +269,7 @@ class Deploy extends Command
      */
     private function setupUpgrade()
     {
+        $importConfig = true;
         try {
             // This command will not return a zero status if there are schema updates to process
             $this->env->execute(
@@ -280,6 +281,14 @@ class Deploy extends Command
 
             $this->env->execute(
                 "cd bin/; /usr/bin/php ./magento setup:upgrade --keep-generated {$this->verbosityLevel}"
+            );
+            $importConfig = false;
+        }
+
+        if ($importConfig) {
+            $this->env->log("Running app:config:import");
+            $this->env->execute(
+                "cd bin/; /usr/bin/php ./magento app:config:import {$this->verbosityLevel}"
             );
         }
     }
