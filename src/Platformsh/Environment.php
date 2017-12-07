@@ -13,7 +13,7 @@ class Environment
 {
     const MAGENTO_ROOT = __DIR__ . '/../../../../../';
 
-    public $writableDirs = ['app/etc', 'pub/media'];
+    public $writableDirs = ['app/etc', 'pub/media', 'generated'];
 
     /**
      * Get routes information from Platformsh environment variable.
