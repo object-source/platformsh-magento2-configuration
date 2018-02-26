@@ -657,7 +657,7 @@ class Deploy extends Command
     {
         $this->env->log("Enabling redis cache.");
         $configFile = Environment::MAGENTO_ROOT . '/app/etc/env.php';
-        if (file_exists($configFile)) {
+        if (file_exists($configFile) && $this->redisHost !== null && $this->redisPort !== null) {
             $config = include $configFile;
             $config['cache'] = $this->getRedisCacheConfiguration();
             $updatedConfig = '<?php'  . "\n" . 'return ' . var_export($config, true) . ';';
